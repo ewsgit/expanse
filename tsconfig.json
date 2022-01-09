@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+	"importHelpers": true,
+	"forceConsistentCasingInFileNames": true,
+    "target": "es5",
+    "watch": true,
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+  }
+}
