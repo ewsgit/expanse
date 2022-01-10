@@ -98,6 +98,7 @@ export class DisplayObject {
     mouseY;
     mouseDown;
     mouseOver;
+    onObjClick;
     onObjRender;
     onObjMouseOver;
     constructor(x, y, width, height) {
@@ -110,15 +111,20 @@ export class DisplayObject {
         document.body.onclick = this.#clickEvent;
     }
     #clickEvent(e) {
-        this.onObjMouseOver(e);
+        for (let i = 0; i < this.onObjMouseOver.length; i++) {
+            this.onObjMouseOver[i](e);
+        }
     }
+    //null function to be overwritten by child classes
     doRender() {
         return;
     }
     render() {
         this.doRender();
         if (this.onObjRender) {
-            this.onObjRender(this);
+            for (let i = 0; i < this.onObjRender.length; i++) {
+                this.onObjRender[i](this);
+            }
         }
     }
     setX(x) {
@@ -142,11 +148,15 @@ export class DisplayObject {
         return this;
     }
     onRender(callback) {
-        this.onObjRender = callback;
+        this.onObjRender.push(callback);
         return this;
     }
     onMouseOver(callback) {
-        this.onObjMouseOver = callback;
+        this.onObjMouseOver.push(callback);
+        return this;
+    }
+    onEvent(event, callback) {
+        this.onObjClick.push(callback);
         return this;
     }
 }

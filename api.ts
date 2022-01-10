@@ -25,7 +25,7 @@ export class Display {
     this.fps = 10;
     this.tickCount = 0;
     this.backgroundColor = "#000000";
-    this.children = []
+    this.children = [];
     if (options) {
       if (options.fullScreen === true) {
         document.body.style.margin = "0";
@@ -78,7 +78,7 @@ export class Display {
   tick() {
     this.ctx.fillStyle = this.backgroundColor;
     this.ctx.fillRect(0, 0, this.maxWidth, this.maxHeight);
-    this.render()
+    this.render();
     setTimeout(() => {
       this.tickCount++;
       this.tick();
@@ -100,55 +100,65 @@ export class DisplayObject {
   mouseDown: boolean;
   mouseOver: boolean;
 
-  onObjRender: Function;
-  onObjMouseOver: Function;
-  constructor(x:number, y:number, width:number, height:number) {
+  onObjClick: Function[];
+  onObjRender: Function[];
+  onObjMouseOver: Function[];
+  constructor(x: number, y: number, width: number, height: number) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.bgColor = "#ff0000";
     this.borderRadius = 0;
-    document.body.onclick = this.#clickEvent
+    document.body.onclick = this.#clickEvent;
   }
-  #clickEvent(e:MouseEvent) {
-    this.onObjMouseOver(e)
-  }
-  doRender() {
-    return
-  }
-  render() {
-    this.doRender()
-    if (this.onObjRender) {
-      this.onObjRender(this)
+  #clickEvent(e: MouseEvent) {
+    for (let i = 0; i < this.onObjMouseOver.length; i++) {
+      this.onObjMouseOver[i](e);
     }
   }
-  setX(x:number) {
+  //null function to be overwritten by child classes
+  doRender() {
+    return;
+  }
+  render() {
+    this.doRender();
+    if (this.onObjRender) {
+      for (let i = 0; i < this.onObjRender.length; i++) {
+        this.onObjRender[i](this);
+      }
+    }
+  }
+  setX(x: number) {
     this.x = x;
     return this;
   }
-  setY(y:number) {
+  setY(y: number) {
     this.y = y;
     return this;
   }
-  setWidth(width:number) {
+  setWidth(width: number) {
     this.width = width;
     return this;
   }
-  setHeight(height:number) {
+  setHeight(height: number) {
     this.height = height;
     return this;
   }
-  backgroundColor(color:string) {
+  backgroundColor(color: string) {
     this.bgColor = color;
     return this;
   }
-  onRender(callback:Function) {
-    this.onObjRender = callback;
+  onRender(callback: Function) {
+    this.onObjRender.push(callback);
     return this;
   }
-  onMouseOver(callback:Function) {
-    this.onObjMouseOver = callback;
+  onMouseOver(callback: Function) {
+    this.onObjMouseOver.push(callback);
+    return this;
+  }
+  onEvent(event: "click", callback: Function) {
+    this.onObjClick.push(callback);
     return this;
   }
 }
@@ -164,21 +174,21 @@ export class Rect extends DisplayObject {
 }
 
 export class Line extends DisplayObject {
-  lineWidth:number;
-  constructor(x:number, y:number, width:number, height:number) {
+  lineWidth: number;
+  constructor(x: number, y: number, width: number, height: number) {
     super(x, y, width, height);
     this.lineWidth = 1;
   }
   doRender() {
     this.ctx.strokeStyle = this.bgColor;
     this.ctx.lineWidth = this.lineWidth;
-    this.ctx.beginPath()
+    this.ctx.beginPath();
     this.ctx.moveTo(this.x, this.y);
     this.ctx.lineTo(this.x + this.width, this.y + this.height);
     this.ctx.stroke();
     this.ctx.closePath();
   }
-  setLineWidth(lineWidth:number) {
+  setLineWidth(lineWidth: number) {
     this.lineWidth = lineWidth;
     return this;
   }

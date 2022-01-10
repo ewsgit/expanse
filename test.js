@@ -18,23 +18,7 @@ display.addChild(
     } else {
       i += 0.5;
     }
-  })
-);
-display.addChild(new Line(0, 0, i, i).onRender((obj) => {
-  obj.setWidth(i)
-  obj.setHeight(i)
-}));
-display.addChild(
-  new Line(0, 0, i, i).onRender(obj => {
-    obj.setY(i)
-    obj.setWidth(i);
-    obj.setHeight(i);
-  })
-);
-display.addChild(
-  new Line(0, 0, i, i).onRender(obj => {
-    obj.setX(i);
-    obj.setWidth(i);
-    obj.setHeight(i);
-  })
+  }).onEvent("click", (e) => {
+  console.log(e);
+})
 );
