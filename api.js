@@ -1,5 +1,18 @@
-var Display = /** @class */ (function () {
-    function Display(canvas, options) {
+export class Display {
+    canvas;
+    ctx;
+    options;
+    maxWidth;
+    maxHeight;
+    xOffset;
+    yOffset;
+    xScale;
+    yScale;
+    fps;
+    tickCount;
+    backgroundColor;
+    children;
+    constructor(canvas, options) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
         this.options = options;
@@ -40,72 +53,129 @@ var Display = /** @class */ (function () {
         this.InitCanvas();
         this.tick();
     }
-    Display.prototype.InitCanvas = function () {
+    InitCanvas() {
         this.ctx.clearRect(0, 0, this.maxWidth, this.maxHeight);
         this.canvas.width = this.maxWidth;
         this.canvas.height = this.maxHeight;
-    };
-    Display.prototype.setZoom = function (scaleX, scaleY) {
+    }
+    setZoom(scaleX, scaleY) {
         this.xScale = scaleX;
         this.yScale = scaleY;
-    };
-    Display.prototype.resetZoom = function () {
+    }
+    resetZoom() {
         this.xScale = 1;
         this.yScale = 1;
-    };
-    Display.prototype.addChild = function (child) {
+    }
+    addChild(child) {
         this.children.push(child);
-    };
-    Display.prototype.render = function () {
-        for (var i = 0; i < this.children.length; i++) {
-            var child = this.children[i];
+    }
+    render() {
+        for (let i = 0; i < this.children.length; i++) {
+            const child = this.children[i];
             child.ctx = this.ctx;
             child.render();
         }
-    };
-    Display.prototype.tick = function () {
-        var _this = this;
+    }
+    tick() {
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(0, 0, this.maxWidth, this.maxHeight);
         this.render();
-        setTimeout(function () {
-            _this.tickCount++;
-            _this.tick();
+        setTimeout(() => {
+            this.tickCount++;
+            this.tick();
         }, 1000 / this.fps);
-    };
-    return Display;
-}());
-export { Display };
-var DisplayObject = /** @class */ (function () {
-    function DisplayObject(x, y, width, height) {
+    }
+}
+export class DisplayObject {
+    x;
+    y;
+    width;
+    height;
+    bgColor;
+    borderRadius;
+    ctx;
+    mouseX;
+    mouseY;
+    mouseDown;
+    mouseOver;
+    onObjRender;
+    onObjMouseOver;
+    constructor(x, y, width, height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.bgColor = "#ff0000";
         this.borderRadius = 0;
+        document.body.onclick = this.#clickEvent;
     }
-    DisplayObject.prototype.render = function () {
-        this.ctx.beginPath();
-        this.ctx.fillStyle = this.bgColor;
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
-        this.ctx.closePath();
+    #clickEvent(e) {
+        this.onObjMouseOver(e);
+    }
+    doRender() {
+        return;
+    }
+    render() {
+        this.doRender();
         if (this.onObjRender) {
-            this.onObjRender();
+            this.onObjRender(this);
         }
-    };
-    DisplayObject.prototype.backgroundColor = function (color) {
+    }
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+    setWidth(width) {
+        this.width = width;
+        return this;
+    }
+    setHeight(height) {
+        this.height = height;
+        return this;
+    }
+    backgroundColor(color) {
         this.bgColor = color;
         return this;
-    };
-    DisplayObject.prototype.onRender = function (callback) {
+    }
+    onRender(callback) {
         this.onObjRender = callback;
         return this;
-    };
-    DisplayObject.prototype.onMouseOver = function (callback) {
+    }
+    onMouseOver(callback) {
         this.onObjMouseOver = callback;
         return this;
-    };
-    return DisplayObject;
-}());
-export { DisplayObject };
+    }
+}
+export class Rect extends DisplayObject {
+    constructor(x, y, width, height) {
+        super(x, y, width, height);
+    }
+    doRender() {
+        this.ctx.fillStyle = this.bgColor;
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+export class Line extends DisplayObject {
+    lineWidth;
+    constructor(x, y, width, height) {
+        super(x, y, width, height);
+        this.lineWidth = 1;
+    }
+    doRender() {
+        this.ctx.strokeStyle = this.bgColor;
+        this.ctx.lineWidth = this.lineWidth;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x, this.y);
+        this.ctx.lineTo(this.x + this.width, this.y + this.height);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+    setLineWidth(lineWidth) {
+        this.lineWidth = lineWidth;
+        return this;
+    }
+}

@@ -98,6 +98,7 @@ export class DisplayObject {
   mouseX: number;
   mouseY: number;
   mouseDown: boolean;
+  mouseOver: boolean;
 
   onObjRender: Function;
   onObjMouseOver: Function;
@@ -108,16 +109,35 @@ export class DisplayObject {
     this.height = height;
     this.bgColor = "#ff0000";
     this.borderRadius = 0;
+    document.body.onclick = this.#clickEvent
+  }
+  #clickEvent(e:MouseEvent) {
+    this.onObjMouseOver(e)
+  }
+  doRender() {
+    return
   }
   render() {
-    this.ctx.beginPath();
-    this.ctx.fillStyle = this.bgColor;
-    this.ctx.fillRect(this.x, this.y, this.width, this.height);
-    this.ctx.closePath();
+    this.doRender()
     if (this.onObjRender) {
-      this.onObjRender()
+      this.onObjRender(this)
     }
-
+  }
+  setX(x:number) {
+    this.x = x;
+    return this;
+  }
+  setY(y:number) {
+    this.y = y;
+    return this;
+  }
+  setWidth(width:number) {
+    this.width = width;
+    return this;
+  }
+  setHeight(height:number) {
+    this.height = height;
+    return this;
   }
   backgroundColor(color:string) {
     this.bgColor = color;
@@ -129,6 +149,37 @@ export class DisplayObject {
   }
   onMouseOver(callback:Function) {
     this.onObjMouseOver = callback;
+    return this;
+  }
+}
+
+export class Rect extends DisplayObject {
+  constructor(x: number, y: number, width: number, height: number) {
+    super(x, y, width, height);
+  }
+  doRender() {
+    this.ctx.fillStyle = this.bgColor;
+    this.ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+}
+
+export class Line extends DisplayObject {
+  lineWidth:number;
+  constructor(x:number, y:number, width:number, height:number) {
+    super(x, y, width, height);
+    this.lineWidth = 1;
+  }
+  doRender() {
+    this.ctx.strokeStyle = this.bgColor;
+    this.ctx.lineWidth = this.lineWidth;
+    this.ctx.beginPath()
+    this.ctx.moveTo(this.x, this.y);
+    this.ctx.lineTo(this.x + this.width, this.y + this.height);
+    this.ctx.stroke();
+    this.ctx.closePath();
+  }
+  setLineWidth(lineWidth:number) {
+    this.lineWidth = lineWidth;
     return this;
   }
 }
