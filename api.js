@@ -45,8 +45,11 @@ export class Display {
                 if (typeof options.fps === "number") {
                     this.fps = options.fps;
                 }
+                else if (options.fps === "adaptive") {
+                    this.fps = options.fps;
+                }
                 else {
-                    console.warn("The fps option must be a number, defaulting to 10fps");
+                    console.warn("fps must be a number or 'adaptive', defaulting to 10");
                 }
             }
         }
@@ -80,10 +83,18 @@ export class Display {
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(0, 0, this.maxWidth, this.maxHeight);
         this.render();
-        setTimeout(() => {
-            this.tickCount++;
-            this.tick();
-        }, 1000 / this.fps);
+        if (this.fps === "adaptive") {
+            requestAnimationFrame(() => {
+                this.tickCount++;
+                this.tick();
+            });
+        }
+        else {
+            setTimeout(() => {
+                this.tickCount++;
+                this.tick();
+            }, 1000 / this.fps);
+        }
     }
 }
 export class DisplayObject {
@@ -109,6 +120,7 @@ export class DisplayObject {
         this.bgColor = "#ff0000";
         this.borderRadius = 0;
         document.body.onclick = this.#clickEvent;
+        this.onObjRender = [];
     }
     #clickEvent(e) {
         for (let i = 0; i < this.onObjMouseOver.length; i++) {
@@ -177,12 +189,10 @@ export class Line extends DisplayObject {
     }
     doRender() {
         this.ctx.strokeStyle = this.bgColor;
-        this.ctx.lineWidth = this.lineWidth;
         this.ctx.beginPath();
         this.ctx.moveTo(this.x, this.y);
         this.ctx.lineTo(this.x + this.width, this.y + this.height);
         this.ctx.stroke();
-        this.ctx.closePath();
     }
     setLineWidth(lineWidth) {
         this.lineWidth = lineWidth;
