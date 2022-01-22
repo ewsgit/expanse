@@ -1,3 +1,5 @@
+import { Error } from "./Console.js";
+
 export class Display {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -11,8 +13,17 @@ export class Display {
   fps: number | string;
   tickCount: number;
   backgroundColor: string;
-  children: DisplayObject[];
-  constructor(canvas, options) {
+  deviceType: string;
+  scenes: DisplayScene[];
+  currentScene: number;
+  constructor(
+    canvas: HTMLCanvasElement,
+    options: {
+      fps?: number | "adaptive";
+      backgroundColor?: string;
+      fullScreen?: boolean;
+    }
+  ) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.options = options;
@@ -25,7 +36,8 @@ export class Display {
     this.fps = 10;
     this.tickCount = 0;
     this.backgroundColor = "#000000";
-    this.children = [];
+    this.scenes = [];
+    this.currentScene = -1;
     if (options) {
       if (options.fullScreen === true) {
         document.body.style.margin = "0";
@@ -58,17 +70,33 @@ export class Display {
     this.ctx.clearRect(0, 0, this.maxWidth, this.maxHeight);
     this.canvas.width = this.maxWidth;
     this.canvas.height = this.maxHeight;
+    this.deviceType =
+      "ontouchstart" in document.documentElement &&
+      navigator.userAgent.match(/Mobi/)
+        ? "mobile"
+        : "desktop";
   }
-  setZoom(scaleX, scaleY) {
+  setZoom(scaleX: number, scaleY: number) {
     this.xScale = scaleX;
     this.yScale = scaleY;
+  }
+  setXOffset(x: number) {
+    this.xOffset = x;
+    return this;
+  }
+  setYOffset(y: number) {
+    this.yOffset = y;
+    return this;
   }
   resetZoom() {
     this.xScale = 1;
     this.yScale = 1;
   }
-  addChild(child) {
-    this.children.push(child);
+  addChild(child: DisplayObject, layer: number) {
+    this.children.push(<any>{
+      obj: child,
+      layer: layer ? layer : 1,
+    });
   }
   render() {
     for (let i = 0; i < this.children.length; i++) {
@@ -80,6 +108,15 @@ export class Display {
   tick() {
     this.ctx.fillStyle = this.backgroundColor;
     this.ctx.fillRect(0, 0, this.maxWidth, this.maxHeight);
+    if (this.currentScene === -1) {
+      this.ctx.fillStyle = "#ffffff";
+      this.ctx.font = "2em Arial";
+      this.ctx.fillText(
+        "No Scene Loaded",
+        this.maxWidth / 2 - this.ctx.measureText("No Scene Loaded").width / 2,
+        this.maxHeight / 2
+      );
+    }
     this.render();
     if (this.fps === "adaptive") {
       requestAnimationFrame(() => {
@@ -93,7 +130,10 @@ export class Display {
       }, 1000 / <number>this.fps);
     }
   }
+  newScene(name: string) {}
 }
+
+class DisplayScene {}
 
 export class DisplayObject {
   x: number;
@@ -129,7 +169,9 @@ export class DisplayObject {
   }
   //null function to be overwritten by child classes
   doRender() {
-    return;
+    return Error(
+      "The doRender function must be overwritten by child classes, This is a template class."
+    );
   }
   render() {
     this.doRender();
@@ -191,11 +233,11 @@ export class Line extends DisplayObject {
   }
   doRender() {
     this.ctx.strokeStyle = this.bgColor;
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.x, this.y);
-      this.ctx.lineTo(this.x + this.width, this.y + this.height);
-      this.ctx.stroke();
+    this.ctx.lineWidth = this.lineWidth;
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.x, this.y);
+    this.ctx.lineTo(this.x + this.width, this.y + this.height);
+    this.ctx.stroke();
   }
   setLineWidth(lineWidth: number) {
     this.lineWidth = lineWidth;
